@@ -1,0 +1,626 @@
+/* ==========================================================================
+   Arvin Zargaran — portfolio
+   Direction: instrument-panel editorial.
+   The page is chaptered: paper → ink → paper. The ink chapter is where the
+   work lives, and the ground morphs into it rather than cutting.
+   Signature: the Confidence Meter (see .meter) — an instrument that fills to
+   a project's verified evidence and stops at the line where it runs out.
+   ========================================================================== */
+
+/* ---------- 1. Tokens -------------------------------------------------
+   Chapters are a CONTRAST INVERSION, not a fixed colour. `base` is the
+   viewer's own theme ground; `flip` is its opposite. So the page morphs
+   light→dark for a light-mode viewer and dark→light for a dark-mode one,
+   and the macro move lands either way. (v1 hard-coded dark for the flip,
+   which made it invisible in dark mode — the whole effect was lost.)
+   ---------------------------------------------------------------------- */
+:root {
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --f-util: "Archivo", "Helvetica Neue", Arial, sans-serif;
+
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+  --step: clamp(4rem, 10vw, 9rem);
+  --measure: 34rem;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-inout: cubic-bezier(0.65, 0.01, 0.05, 0.99);
+  --spring: linear(
+    0, 0.176 3.3%, 0.63 7.9%, 0.965 12.3%, 1.086, 1.169 17.2%, 1.198 19.1%,
+    1.201, 1.194 22.2%, 1.155 25.4%, 1.048 32.1%, 1.001 36.2%, 0.984 40.4%,
+    0.997 48.4%, 1.003 62.2%, 1
+  );
+
+  --scroll: 0;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { /* light theme, base chapter → paper */
+    --bg: #E7E9EA; --bg-2: #DCDFE1; --fg: #101416; --dim: #5C6366;
+    --line: #C6CBCE; --accent: #101416; --warn: #B32D23; --on-accent: #E7E9EA;
+  }
+  :root:not([data-theme="dark"])[data-chapter="flip"] { /* → ink */
+    --bg: #101315; --bg-2: #171B1E; --fg: #E4E7E8; --dim: #878F93;
+    --line: #272D31; --accent: #E4E7E8; --warn: #E7594C; --on-accent: #101315;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { /* dark theme, base chapter → ink */
+    --bg: #101315; --bg-2: #171B1E; --fg: #E4E7E8; --dim: #878F93;
+    --line: #272D31; --accent: #E4E7E8; --warn: #E7594C; --on-accent: #101315;
+  }
+  :root:not([data-theme="light"])[data-chapter="flip"] { /* → paper */
+    --bg: #E7E9EA; --bg-2: #DCDFE1; --fg: #101416; --dim: #5C6366;
+    --line: #C6CBCE; --accent: #101416; --warn: #B32D23; --on-accent: #E7E9EA;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #E7E9EA; --bg-2: #DCDFE1; --fg: #101416; --dim: #5C6366;
+  --line: #C6CBCE; --accent: #101416; --warn: #B32D23; --on-accent: #E7E9EA;
+}
+:root[data-theme="light"][data-chapter="flip"] {
+  --bg: #101315; --bg-2: #171B1E; --fg: #E4E7E8; --dim: #878F93;
+  --line: #272D31; --accent: #E4E7E8; --warn: #E7594C; --on-accent: #101315;
+}
+:root[data-theme="dark"] {
+  --bg: #101315; --bg-2: #171B1E; --fg: #E4E7E8; --dim: #878F93;
+  --line: #272D31; --accent: #E4E7E8; --warn: #E7594C; --on-accent: #101315;
+}
+:root[data-theme="dark"][data-chapter="flip"] {
+  --bg: #E7E9EA; --bg-2: #DCDFE1; --fg: #101416; --dim: #5C6366;
+  --line: #C6CBCE; --accent: #101416; --warn: #B32D23; --on-accent: #E7E9EA;
+}
+
+/* ---------- 2. Base --------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+body {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 420ms var(--ease-out), color 420ms var(--ease-out);
+  overflow-x: clip;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 400; }
+p { margin: 0 0 1.15em; max-width: var(--measure); text-wrap: pretty; }
+p:last-child { margin-bottom: 0; }
+a, button { color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+:focus-visible { outline: 2px solid var(--warn); outline-offset: 3px; border-radius: 2px; }
+::selection { background: var(--accent); color: var(--on-accent); }
+
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em;
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 2px; padding: 0.08em 0.35em; white-space: nowrap;
+}
+
+.wrap {
+  width: min(100% - (var(--gutter) * 2), 64rem);
+  margin-inline: auto;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.skip {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  background: var(--fg); color: var(--bg);
+  padding: 0.6rem 1rem; z-index: 60;
+  font-family: var(--f-util); font-size: 0.8rem;
+}
+.skip:focus-visible {
+  width: auto; height: auto; overflow: visible; clip: auto; clip-path: none;
+  left: var(--gutter); top: 0.75rem;
+}
+
+/* ---------- 3. Glass nav (the one glass surface on the page) ---------- */
+.topbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  height: 3.25rem;
+  padding-inline: var(--gutter);
+  color: var(--fg);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: saturate(1.8) blur(20px);
+  -webkit-backdrop-filter: saturate(1.8) blur(20px);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 420ms var(--ease-out),
+    color 420ms var(--ease-out),
+    border-color 400ms var(--ease-out),
+    transform 500ms var(--ease-out);
+}
+.topbar.is-stuck { border-bottom-color: color-mix(in srgb, var(--line) 80%, transparent); }
+
+.mark {
+  font-family: var(--f-util); font-size: 0.78rem; letter-spacing: 0.06em;
+  text-decoration: none; display: inline-flex; align-items: center; min-height: 44px;
+}
+.mark b { font-weight: 600; }
+.mark span { color: var(--dim); }
+@media (max-width: 34rem) { .mark span { display: none; } }
+
+.topbar nav { display: flex; align-items: center; gap: 1.1rem; }
+.topbar nav a {
+  font-family: var(--f-util); font-size: 0.75rem; letter-spacing: 0.05em;
+  color: var(--dim); text-decoration: none; padding: 0.35rem 0;
+  transition: color 200ms var(--ease-out);
+}
+.topbar nav a:hover { color: var(--fg); }
+@media (max-width: 48rem) {
+  .topbar nav { gap: 0.4rem; }
+  .topbar nav a { padding: 0.75rem 0.5rem; }
+  .topbar nav a[data-optional] { display: none; }
+}
+
+.theme-toggle {
+  appearance: none; background: none; border: 1px solid var(--line); color: var(--dim);
+  cursor: pointer; width: 2.75rem; height: 2.75rem; border-radius: 999px;
+  display: grid; place-items: center; padding: 0;
+  transition: border-color 200ms var(--ease-out), color 200ms var(--ease-out), transform 300ms var(--spring);
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.theme-toggle:active { transform: scale(0.92); }
+.theme-toggle svg { width: 15px; height: 15px; }
+
+.progress {
+  position: fixed; inset: 0 auto auto 0; z-index: 41;
+  height: 2px; width: 100%;
+  transform: scaleX(var(--scroll)); transform-origin: 0 50%;
+  background: var(--accent);
+  opacity: 0.9;
+}
+
+/* ---------- 4. Hero --------------------------------------------------- */
+.hero {
+  min-height: 100svh;
+  display: flex; align-items: center;
+  padding: 7rem 0 var(--step);
+  --exit: clamp(0, var(--hero-p, 0), 1);
+}
+.driven .hero-inner {
+  transform: translate3d(0, calc(var(--exit) * -2.5rem), 0);
+  will-change: transform;
+}
+
+.eyebrow {
+  font-family: var(--f-util); font-size: 0.75rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--dim);
+  margin: 0 0 1.75rem; display: flex; align-items: center; gap: 0.7rem;
+}
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); max-width: 12rem; }
+
+.hero h1 {
+  font-family: var(--f-display);
+  font-variation-settings: "wdth" 112;
+  font-weight: 700;
+  font-size: clamp(2.6rem, 7.4vw, 5.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  max-width: 17ch;
+  margin-bottom: 1.9rem;
+  text-wrap: balance;
+}
+.hero h1 em { font-style: normal; color: var(--warn); }
+
+/* No italic face is loaded: it was 126 KB of the 334 KB font payload and only
+   three phrases used it. Emphasis rides the roman instead, and the two
+   provenance phrases become labels in the utility face, which is what they
+   are. */
+em { font-style: normal; font-weight: 600; }
+.decision dd em.src {
+  font-family: var(--f-util); font-weight: 600;
+  font-size: 0.84em; letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.wipe { display: block; overflow: hidden; }
+.wipe > span { display: block; }
+
+.lede { font-size: clamp(1.0625rem, 1.6vw, 1.1875rem); color: var(--dim); }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+/* ---------- 5. Contact rail ------------------------------------------ */
+.rail { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.25rem; }
+.rail a {
+  position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--f-util); font-size: 0.8rem;
+  text-decoration: none; padding: 0.72rem 1rem; min-height: 44px;
+  border: 1px solid var(--line); border-radius: 2px;
+  transition: border-color 250ms var(--ease-out), color 250ms var(--ease-out),
+              background-color 250ms var(--ease-out), transform 400ms var(--spring);
+}
+.rail a:hover { border-color: var(--accent); color: var(--accent); }
+.rail a.primary {
+  background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+  font-weight: 500;
+}
+.rail a.primary:hover { color: var(--on-accent); filter: brightness(1.08); }
+.rail svg { width: 14px; height: 14px; flex: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .magnetic { transform: translate3d(var(--mx, 0px), var(--my, 0px), 0); }
+}
+
+/* ---------- 6. The thesis scene (pinned, ink) ------------------------- */
+.thesis { height: 140vh; position: relative; }
+@media (max-width: 48rem) { .thesis { height: 130vh; } }
+.thesis-stage {
+  position: sticky; top: 0; height: 100svh;
+  display: grid; align-content: center;
+  overflow: hidden;
+}
+.thesis-line {
+  font-family: var(--f-display);
+  font-variation-settings: "wdth" 112;
+  font-weight: 700;
+  font-size: clamp(1.75rem, 4.9vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  max-width: 27ch;
+  margin: 0;
+}
+.thesis-line em { font-style: normal; color: var(--warn); }
+
+.thesis-line .ln { display: block; }
+/* Only a confirmed-running engine is allowed to hide anything. */
+.driven .thesis-line .ln {
+  clip-path: inset(0 0 calc((1 - var(--l, 0)) * 105%) 0);
+  opacity: calc(0.15 + var(--l, 0) * 0.85);
+  will-change: clip-path, opacity;
+}
+
+.thesis-legend {
+  margin-top: 2.25rem;
+  display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem;
+  font-family: var(--f-util); font-size: 0.75rem; color: var(--dim);
+}
+.driven .thesis-legend {
+  opacity: var(--legend, 0);
+  transform: translate3d(0, calc((1 - var(--legend, 0)) * 1.5rem), 0);
+}
+.key { display: flex; align-items: center; gap: 0.6rem; }
+.key i { width: 1.75rem; height: 3px; border-radius: 2px; flex: none; }
+.key i.ok { background: color-mix(in srgb, var(--fg) 50%, transparent); }
+.key i.no { background: none; border-top: 3px dashed var(--warn); height: 0; }
+
+/* ---------- The scorecard — the page auditing itself ------------------- */
+.scorecard { margin-top: 3.25rem; max-width: 44rem; }
+/* Same fail-safe rule as everywhere else: only a running engine may hide it. */
+.driven .scorecard { opacity: var(--sc, 0); }
+
+.scorecard-head {
+  font-family: var(--f-util); font-size: 0.82rem; letter-spacing: 0.02em;
+  color: var(--dim); margin: 0 0 1rem; max-width: none;
+}
+.scorecard-head .fixed-tally { color: var(--fg); font-weight: 500; }
+
+.ticks { display: flex; gap: 5px; height: 1.15rem; align-items: stretch; }
+.ticks i {
+  flex: 1; max-width: 1.5rem;
+  position: relative;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
+}
+/* Pseudo-element fill: column keeps full height, only the level moves. */
+.ticks i::after {
+  content: ""; position: absolute; inset: auto 0 0 0;
+  height: 100%; background: color-mix(in srgb, var(--fg) 50%, transparent);
+}
+.ticks i.open {
+  border-bottom: 1px dashed var(--warn);
+}
+.ticks i.open::after { content: none; }
+.driven .ticks i::after { height: calc(var(--t, 0) * 100%); }
+.driven .ticks i.open { opacity: calc(0.25 + var(--t, 0) * 0.75); }
+
+.scorecard-foot {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
+  margin: 1.1rem 0 0; max-width: none;
+  font-family: var(--f-util); font-size: 0.75rem; color: var(--dim);
+}
+.stat b { font-size: 1.05rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat.ok b { color: var(--fg); }
+.stat.no b { color: var(--warn); }
+
+@media (max-width: 48rem) {
+  .scorecard { margin-top: 2.25rem; }
+  .ticks { height: 1rem; gap: 3px; }
+  .scorecard-foot { flex-direction: column; gap: 0.35rem; }
+}
+
+/* ---------- 7. Sections ------------------------------------------------ */
+.sec { padding-block: var(--step); scroll-margin-top: 4.5rem; }
+#work { padding-top: clamp(2rem, 4vw, 3.5rem); }
+.sec + .sec { border-top: 1px solid var(--line); }
+
+.sec-head { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 3.5rem; }
+.sec-head h2 {
+  font-family: var(--f-util); font-size: 0.78rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--dim); font-weight: 500;
+}
+
+/* ---------- 8. Project records ---------------------------------------- */
+.record { padding-block: 4rem; }
+.record + .record { border-top: 1px solid var(--line); }
+.record:first-of-type { padding-top: 0; }
+
+.record-grid {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) 15rem;
+  gap: 0 2.75rem;
+  align-items: start;
+}
+@media (max-width: 66rem) {
+  .record-grid { grid-template-columns: 4.5rem minmax(0, 1fr); }
+  .instrument { grid-column: 2; margin-top: 2.5rem; }
+}
+@media (max-width: 48rem) {
+  .record-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .instrument { grid-column: 1; }
+}
+
+.record-index {
+  font-family: var(--f-util); font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--dim); padding-top: 1.15rem; line-height: 1.5;
+}
+@media (max-width: 48rem) { .record-index { padding-top: 0; } }
+
+.record h3 {
+  font-family: var(--f-display);
+  font-variation-settings: "wdth" 108;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  line-height: 1.1; letter-spacing: -0.026em;
+  margin-bottom: 0.5rem; text-wrap: balance;
+}
+.record .tagline { color: var(--dim); font-size: 1.0625rem; margin-bottom: 1.6rem; }
+
+.decision {
+  margin: 1.9rem 0 0; padding: 0.25rem 0 0.25rem 1.35rem;
+  border-left: 1px solid var(--line);
+  max-width: var(--measure);
+}
+.decision dt {
+  font-family: var(--f-util); font-size: 0.7rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem;
+  position: relative;
+}
+.decision dt::before {
+  content: ""; position: absolute; left: -1.35rem; top: 0.5em;
+  width: 0.7rem; height: 1px; background: var(--accent);
+}
+.decision dd { margin: 0 0 1.25rem; }
+.decision dd:last-child { margin-bottom: 0; }
+
+.links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; list-style: none; padding: 0; }
+.links a {
+  font-family: var(--f-util); font-size: 0.78rem; font-weight: 600; color: var(--fg);
+  text-decoration: none; position: relative;
+  display: inline-flex; align-items: center; min-height: 44px;
+}
+.links a::after {
+  content: ""; position: absolute; left: 0; bottom: 12px; height: 1px; width: 100%;
+  background: currentColor; transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform 320ms var(--ease-out);
+}
+.links a:hover::after, .links a:focus-visible::after { transform: scaleX(1); }
+
+/* ---------- 9. THE SIGNATURE: the Confidence Meter -------------------- */
+.instrument { position: sticky; top: 5rem; }
+@media (max-width: 66rem) { .instrument { position: static; } }
+
+.meter-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  font-family: var(--f-util); font-size: 0.66rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--dim);
+  padding-bottom: 0.75rem; border-bottom: 1px solid var(--line);
+}
+.meter-read { color: var(--dim); font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
+.meter-read.short { color: var(--warn); }
+
+/* One segment per claim, lighting in sequence as the record scrolls through, and the unverified one never lights — it stays an open
+   dashed gap, which is the whole point of the page. */
+.meter { display: flex; gap: 4px; margin: 0.9rem 0 1.4rem; height: 0.9rem; }
+.meter i {
+  flex: 1; position: relative;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
+}
+.meter i::after {
+  content: ""; position: absolute; inset: auto 0 0 0;
+  height: 100%; background: color-mix(in srgb, var(--fg) 50%, transparent);
+}
+.meter i.gap { border-bottom: 1px dashed var(--warn); }
+.meter i.gap::after { content: none; }
+.driven .meter i::after { height: calc(var(--t, 0) * 100%); }
+.driven .meter i.gap { opacity: calc(0.3 + var(--t, 0) * 0.7); }
+
+.claims { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
+.claims li {
+  padding-left: 0.75rem;
+  border-left: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  font-family: var(--f-util); font-size: 0.7rem; line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 500ms var(--ease-out), border-color 500ms var(--ease-out);
+}
+/* Claims only dim once the engine is confirmed running, so a stalled tab
+   shows them at full contrast rather than at 35% and unreadable. */
+.driven .claims li { opacity: 0.5; }
+.driven .claims li.lit { opacity: 1; }
+.driven .claims li.unverified,
+.claims li.unverified {
+  border-left-style: dashed;
+  border-left-color: color-mix(in srgb, var(--warn) 70%, transparent);
+}
+.driven .claims li.unverified { opacity: 1; }
+.claims .k {
+  display: block; color: var(--dim);
+  font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+.claims li.unverified .k { color: var(--warn); }
+.claims .v { color: var(--fg); }
+.claims li.unverified .v { color: var(--warn); }
+
+/* ---------- 10. About / stack ----------------------------------------- */
+.two { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0 2.75rem; }
+@media (max-width: 48rem) { .two { grid-template-columns: 1fr; } }
+
+/* Portrait sits in the records' instrument column. Both children placed
+   explicitly or the prose wraps back under the index gutter. Greyscale:
+   red is the only colour on this page and it means "unproven". */
+.two.about { align-items: start; }
+.two.about > .portrait { grid-column: 2; }
+.two.about > div:last-child { grid-column: 2; }
+
+@media (min-width: 66.01rem) {
+  .two.about { grid-template-columns: 4.5rem minmax(0, 1fr) 15rem; }
+  .two.about > .portrait { grid-column: 3; grid-row: 1; position: sticky; top: 5rem; }
+  .two.about > div:last-child { grid-column: 2; grid-row: 1; }
+}
+@media (max-width: 48rem) {
+  .two.about > .portrait,
+  .two.about > div:last-child { grid-column: 1; }
+}
+
+.portrait { margin: 0 0 2.25rem; max-width: 15rem; }
+@media (min-width: 66.01rem) { .portrait { margin-bottom: 0; max-width: none; } }
+
+.portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  filter: grayscale(1) contrast(1.04);
+}
+
+.portrait figcaption {
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--f-util);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.portrait figcaption b { font-weight: 500; color: var(--accent); }
+
+/* Knocked back on ink: the near-white wall is otherwise the brightest
+   thing on the page. About is always chapter `base`, so ink == dark theme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .portrait img {
+    filter: grayscale(1) contrast(1.02) brightness(0.86);
+  }
+}
+:root[data-theme="dark"] .portrait img {
+  filter: grayscale(1) contrast(1.02) brightness(0.86);
+}
+
+.stack { margin: 2.25rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.55rem; max-width: var(--measure); }
+.stack li {
+  display: grid; grid-template-columns: 7rem 1fr; gap: 1rem;
+  font-family: var(--f-util); font-size: 0.78rem;
+  padding-bottom: 0.55rem; border-bottom: 1px solid var(--line);
+}
+.stack li b {
+  font-weight: 500; color: var(--dim);
+  letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem;
+}
+
+/* ---------- 11. Footer ------------------------------------------------- */
+footer {
+  border-top: 1px solid var(--line); padding: 2.5rem 0 3.5rem;
+  font-family: var(--f-util); font-size: 0.72rem; color: var(--dim);
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;
+}
+footer a { color: var(--dim); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+/* ---------- 12. Motion ------------------------------------------------- */
+@keyframes wipe-up {
+  from { transform: translate3d(0, 105%, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translate3d(0, 1.25rem, 0); }
+  to   { opacity: 1; transform: none; }
+}
+/* Ambient float — the page breathes when scrolling stops. Its absence is
+   what makes a static page read as dead. */
+@keyframes breathe {
+  from { transform: translate3d(0, -5px, 0); }
+  to   { transform: translate3d(0, 5px, 0); }
+}
+
+.js .hero .wipe > span { animation: wipe-up 1s var(--ease-out) both; }
+.js .hero .wipe:nth-of-type(2) > span { animation-delay: 90ms; }
+.js .hero .eyebrow,
+.js .hero .lede,
+.js .hero .rail { animation: fade-up 0.9s var(--ease-out) both; }
+.js .hero .eyebrow { animation-delay: 60ms; }
+.js .hero .lede { animation-delay: 320ms; }
+.js .hero .rail { animation-delay: 440ms; }
+
+.float { animation: breathe 6.5s var(--ease-inout) infinite alternate; }
+
+/* Scroll reveals for everything below the fold. */
+/* Short and small. A 900ms fade on a full-screen block of text means anyone
+   scrolling at a normal pace is reading washed-out grey the whole way down —
+   which reads as a broken page, not as polish. */
+.js.observed .rise { opacity: 0; transform: translate3d(0, 0.75rem, 0); }
+.js.observed .rise.is-in {
+  opacity: 1; transform: none;
+  transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .hero .wipe > span,
+  .js .hero .eyebrow, .js .hero .lede, .js .hero .rail { animation: none; }
+  .float { animation: none; }
+  .hero-inner { transform: none; opacity: 1; }
+  .thesis { height: auto; }
+  .thesis-stage { position: static; height: auto; padding-block: var(--step); }
+  .thesis-line .ln { clip-path: none; opacity: 1; }
+  .thesis-legend { opacity: 1; transform: none; }
+  .scorecard { opacity: 1; }
+  .ticks i { --t: 1; }
+  .js.observed .rise { opacity: 1; transform: none; }
+  .js.observed .rise.is-in { transition: none; }
+  .progress { display: none; }
+  body { transition: none; }
+  .claims li { opacity: 1; }
+}
+
+/* ---------- 13. Print -------------------------------------------------- */
+@media print {
+  .topbar, .progress, .skip, .theme-toggle { display: none; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .thesis { height: auto; }
+  .thesis-stage { position: static; height: auto; }
+  .thesis-line .ln { clip-path: none; opacity: 1; }
+  .scorecard { opacity: 1; }
+  .ticks i { --t: 1; }
+  .record, .sec { break-inside: avoid; }
+  .instrument { position: static; }
+  .claims li { opacity: 1; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+}
