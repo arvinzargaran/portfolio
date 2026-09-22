@@ -59,6 +59,11 @@
     if (meters) meters.forEach(function (m) {
       m.top = m.el.getBoundingClientRect().top + window.scrollY;
     });
+    // Same for the reveals, so the scroll pass can decide visibility from
+    // cached numbers instead of a per-frame getBoundingClientRect.
+    if (reveals) reveals.forEach(function (r) {
+      r.top = r.el.getBoundingClientRect().top + window.scrollY;
+    });
   }
   measure();
   addEventListener('resize', measure, { passive: true });
@@ -82,7 +87,10 @@
 
   /* ---------- Scroll reveals ---------------------------------------------
      Applied before the damped loop so content is never gated on rAF. */
-  var reveals = [].slice.call(document.querySelectorAll('.rise'));
+  var revealsPending = true;
+  var reveals = [].slice.call(document.querySelectorAll('.rise')).map(function (el) {
+    return { el: el, top: el.getBoundingClientRect().top + window.scrollY };
+  });
   if (reveals.length && !reduced.matches) {
     root.classList.add('observed');
     var revealIO = new IntersectionObserver(function (entries) {
@@ -90,9 +98,9 @@
         if (e.isIntersecting) { e.target.classList.add('is-in'); revealIO.unobserve(e.target); }
       });
     }, { rootMargin: '0px 0px 240px 0px' });
-    reveals.forEach(function (el) { revealIO.observe(el); });
+    reveals.forEach(function (r) { revealIO.observe(r.el); });
     // Safety net: never leave anything hidden.
-    setTimeout(function () { reveals.forEach(function (el) { el.classList.add('is-in'); }); }, 4000);
+    setTimeout(function () { reveals.forEach(function (r) { r.el.classList.add('is-in'); }); }, 4000);
   }
 
   /* ---------- The Confidence Meter ---------------------------------------
@@ -113,6 +121,18 @@
     };
   });
 
+  /* The hero index quotes each record's ratio. Derive it from the records
+     themselves once on load so the two can't drift when a claim is added.
+     Runs here, not in the scroll pass — no layout is read and nothing it
+     touches can hide content. */
+  (function syncIndex() {
+    document.querySelectorAll('[data-index-read]').forEach(function (el) {
+      var m = meters[parseInt(el.getAttribute('data-index-read'), 10)];
+      if (!m) return;
+      el.innerHTML = '<b>' + m.sourced.length + '</b> / ' + m.total;
+    });
+  })();
+
   function fillMeters(pos) {
     meters.forEach(function (m) {
       // 0 as the instrument's top reaches the lower third of the viewport,
@@ -131,9 +151,12 @@
       m.claims.forEach(function (c, i) { c.classList.toggle('lit', i < lit); });
       if (m.read) {
         if (m.read.textContent !== lit + ' / ' + m.total) m.read.textContent = lit + ' / ' + m.total;
-        // Amber once it has settled short of the total — the instrument
-        // reporting its own shortfall.
-        m.read.classList.toggle('short', lit >= n);
+        /* Red once it has settled AND is actually short of the total — the
+           instrument reporting its own shortfall. This used to read
+           `lit >= n`, which is just "finished filling", so a record with
+           nothing unproven still coloured its readout red. Every record had a
+           gap until the UFC numbers landed, so the bug never showed. */
+        m.read.classList.toggle('short', lit >= n && n < m.total);
       }
     });
   }
@@ -144,7 +167,10 @@
     meters.forEach(function (m) {
       m.segs.forEach(function (s) { s.style.setProperty('--t', '1'); });
       m.claims.forEach(function (c) { c.classList.add('lit'); });
-      if (m.read) { m.read.textContent = m.sourced.length + ' / ' + m.total; m.read.classList.add('short'); }
+      if (m.read) {
+        m.read.textContent = m.sourced.length + ' / ' + m.total;
+        m.read.classList.toggle('short', m.sourced.length < m.total);
+      }
     });
     return;
   }
@@ -181,6 +207,22 @@
      depend on an animation loop keeping up. */
   function apply(truth, damped) {
     setChapter(truth);
+
+    /* IntersectionObserver alone was leaving content hidden: measured with the
+       4s net disabled, a full continuous scroll still left the work heading
+       and the third record at opacity 0, and a jump straight to #work left six
+       of eight hidden. Anyone clicking the nav saw an empty section until the
+       net fired. So the same rule as everything else here — visibility is
+       decided from `truth` against positions cached in measure(), never from
+       an observer we cannot prove fired, and never from `damped`. */
+    if (revealsPending && reveals) {
+      revealsPending = false;
+      for (var ri = 0; ri < reveals.length; ri++) {
+        if (reveals[ri].el.classList.contains('is-in')) continue;
+        if (reveals[ri].top < truth + geo.vh + 240) reveals[ri].el.classList.add('is-in');
+        else revealsPending = true;
+      }
+    }
 
     root.style.setProperty('--scroll', geo.docH > 0 ? clamp01(truth / geo.docH).toFixed(4) : 0);
 

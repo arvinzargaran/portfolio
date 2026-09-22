@@ -23,6 +23,22 @@
   --step: clamp(4rem, 10vw, 9rem);
   --measure: 34rem;
 
+  /* Type scale. Was 21 ad-hoc sizes, several within 3% of each other, which
+     is accretion rather than a scale. Six steps on a ~1.125 ratio below body,
+     and the display sizes fluid above it. */
+  --t-xs: 0.66rem;    /* uppercase labels */
+  --t-s:  0.74rem;    /* claims, meta, captions */
+  --t-m:  0.83rem;    /* nav, utility links, readouts */
+  --t-l:  0.94rem;    /* index names */
+  --t-body: 1.0625rem;
+  --t-lede: clamp(1.0625rem, 1.6vw, 1.1875rem);
+
+  /* Vertical rhythm. Everything stacks on a 0.25rem (4px) unit; these are the
+     only steps allowed, so spacing reads as intervals rather than guesses. */
+  --sp-1: 0.25rem;  --sp-2: 0.5rem;   --sp-3: 0.75rem;  --sp-4: 1rem;
+  --sp-5: 1.5rem;   --sp-6: 2rem;     --sp-7: 2.5rem;   --sp-8: 3.5rem;
+  --sp-9: 4.5rem;
+
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-inout: cubic-bezier(0.65, 0.01, 0.05, 0.99);
   --spring: linear(
@@ -87,7 +103,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--f-body);
-  font-size: 1.0625rem;
+  font-size: var(--t-body);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -120,8 +136,8 @@ code {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
   background: var(--fg); color: var(--bg);
-  padding: 0.6rem 1rem; z-index: 60;
-  font-family: var(--f-util); font-size: 0.8rem;
+  padding: 0.5rem 1rem; z-index: 60;
+  font-family: var(--f-util); font-size: var(--t-m);
 }
 .skip:focus-visible {
   width: auto; height: auto; overflow: visible; clip: auto; clip-path: none;
@@ -148,22 +164,22 @@ code {
 .topbar.is-stuck { border-bottom-color: color-mix(in srgb, var(--line) 80%, transparent); }
 
 .mark {
-  font-family: var(--f-util); font-size: 0.78rem; letter-spacing: 0.06em;
+  font-family: var(--f-util); font-size: var(--t-m); letter-spacing: 0.06em;
   text-decoration: none; display: inline-flex; align-items: center; min-height: 44px;
 }
 .mark b { font-weight: 600; }
 .mark span { color: var(--dim); }
 @media (max-width: 34rem) { .mark span { display: none; } }
 
-.topbar nav { display: flex; align-items: center; gap: 1.1rem; }
+.topbar nav { display: flex; align-items: center; gap: 1rem; }
 .topbar nav a {
-  font-family: var(--f-util); font-size: 0.75rem; letter-spacing: 0.05em;
-  color: var(--dim); text-decoration: none; padding: 0.35rem 0;
+  font-family: var(--f-util); font-size: var(--t-s); letter-spacing: 0.05em;
+  color: var(--dim); text-decoration: none; padding: 0.25rem 0;
   transition: color 200ms var(--ease-out);
 }
 .topbar nav a:hover { color: var(--fg); }
 @media (max-width: 48rem) {
-  .topbar nav { gap: 0.4rem; }
+  .topbar nav { gap: 0.5rem; }
   .topbar nav a { padding: 0.75rem 0.5rem; }
   .topbar nav a[data-optional] { display: none; }
 }
@@ -199,11 +215,15 @@ code {
 }
 
 .eyebrow {
-  font-family: var(--f-util); font-size: 0.75rem; letter-spacing: 0.14em;
+  font-family: var(--f-util); font-size: var(--t-s); letter-spacing: 0.115em;
   text-transform: uppercase; color: var(--dim);
-  margin: 0 0 1.75rem; display: flex; align-items: center; gap: 0.7rem;
+  margin: 0 0 1.5rem; display: flex; align-items: center; gap: 0.75rem;
 }
 .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); max-width: 12rem; }
+/* Once the index takes the right-hand column the eyebrow has 544px to hold the
+   line, leaving no room for the trailing rule. Measured, not guessed: keeping it
+   here pushed the text onto two rows and left the rule 0px wide. */
+@media (min-width: 62rem) { .eyebrow::after { display: none; } }
 
 .hero h1 {
   font-family: var(--f-display);
@@ -213,7 +233,7 @@ code {
   line-height: 1.02;
   letter-spacing: -0.035em;
   max-width: 17ch;
-  margin-bottom: 1.9rem;
+  margin-bottom: 2rem;
   text-wrap: balance;
 }
 .hero h1 em { font-style: normal; color: var(--warn); }
@@ -232,15 +252,85 @@ em { font-style: normal; font-weight: 600; }
 .wipe { display: block; overflow: hidden; }
 .wipe > span { display: block; }
 
-.lede { font-size: clamp(1.0625rem, 1.6vw, 1.1875rem); color: var(--dim); }
+.lede { font-size: var(--t-lede); color: var(--dim); }
+
+/* The line a technical reader scans for, before any prose. Sits tight under
+   the lede so it reads as a caption to it rather than a separate block. */
+.stackline {
+  margin-top: 0.75rem;
+  font-family: var(--f-util); font-size: var(--t-s); font-weight: 600;
+  letter-spacing: 0.06em; color: var(--dim);
+  max-width: var(--measure);
+}
 .lede strong { color: var(--fg); font-weight: 500; }
 
+/* ---------- The work index -------------------------------------------
+   The hero ran to about 55% of the width and then stopped, and the first
+   project sat two screens down. This is the same fix for both: a contents
+   list that puts the work in the first viewport and states the page's
+   argument as a number before any prose asks you to believe it. Ratios are
+   written into the markup so they survive with JS off, then re-derived from
+   the records on load so the two can never drift apart. */
+.hero-inner { display: grid; gap: 0 4rem; align-items: start; }
+@media (min-width: 62rem) {
+  .hero-inner { grid-template-columns: minmax(0, 1fr) 18rem; }
+  /* The lead column is fixed once .wrap caps out, so the display size is
+     capped in rem rather than vw — a vw cap keeps growing past the cap and
+     wraps "refuses to guess." onto a third line. */
+  .hero h1 { font-size: clamp(2.6rem, 5.2vw, 4.15rem); }
+}
+
+.index { margin-top: 3.5rem; }
+@media (min-width: 62rem) { .index { margin-top: 0.1rem; } }
+
+.index-head, .index-foot {
+  font-family: var(--f-util); font-size: var(--t-xs); font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim);
+  margin: 0 0 1rem; max-width: none;
+}
+.index-foot {
+  letter-spacing: 0.04em; text-transform: none; font-weight: 400;
+  margin: 1rem 0 0; font-size: var(--t-s);
+}
+
+.index ul { list-style: none; margin: 0; padding: 0; }
+.index li + li { border-top: 1px solid var(--line); }
+
+.index a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 1rem;
+  padding: 0.75rem 0;
+  text-decoration: none;
+  transition: color 200ms var(--ease-out);
+}
+.index .ix-name {
+  font-family: var(--f-util); font-weight: 600; font-size: var(--t-l);
+  letter-spacing: -0.005em; line-height: 1.25;
+}
+.index .ix-read {
+  font-family: var(--f-util); font-size: var(--t-m); color: var(--dim);
+  font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  align-self: baseline; white-space: nowrap;
+}
+.index .ix-read b { color: var(--fg); font-weight: 600; }
+.index .ix-domain {
+  grid-column: 1 / -1;
+  font-family: var(--f-util); font-size: var(--t-xs); font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
+  margin-top: 0.25rem;
+}
+
+/* The row is the target, so the whole row responds rather than the label. */
+.index a:hover .ix-name, .index a:focus-visible .ix-name { color: var(--warn); }
+.index a:hover .ix-domain, .index a:focus-visible .ix-domain { color: var(--fg); }
+
 /* ---------- 5. Contact rail ------------------------------------------ */
-.rail { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.25rem; }
+.rail { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
 .rail a {
   position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
-  font-family: var(--f-util); font-size: 0.8rem;
-  text-decoration: none; padding: 0.72rem 1rem; min-height: 44px;
+  font-family: var(--f-util); font-size: var(--t-m);
+  text-decoration: none; padding: 0.75rem 1rem; min-height: 44px;
   border: 1px solid var(--line); border-radius: 2px;
   transition: border-color 250ms var(--ease-out), color 250ms var(--ease-out),
               background-color 250ms var(--ease-out), transform 400ms var(--spring);
@@ -286,62 +376,34 @@ em { font-style: normal; font-weight: 600; }
 }
 
 .thesis-legend {
-  margin-top: 2.25rem;
+  margin-top: 2rem;
   display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem;
-  font-family: var(--f-util); font-size: 0.75rem; color: var(--dim);
+  font-family: var(--f-util); font-size: var(--t-s); color: var(--dim);
 }
 .driven .thesis-legend {
   opacity: var(--legend, 0);
   transform: translate3d(0, calc((1 - var(--legend, 0)) * 1.5rem), 0);
 }
-.key { display: flex; align-items: center; gap: 0.6rem; }
+.key { display: flex; align-items: center; gap: 0.5rem; }
 .key i { width: 1.75rem; height: 3px; border-radius: 2px; flex: none; }
 .key i.ok { background: color-mix(in srgb, var(--fg) 50%, transparent); }
 .key i.no { background: none; border-top: 3px dashed var(--warn); height: 0; }
 
 /* ---------- The scorecard — the page auditing itself ------------------- */
-.scorecard { margin-top: 3.25rem; max-width: 44rem; }
+.scorecard { margin-top: 3.5rem; max-width: 44rem; }
 /* Same fail-safe rule as everywhere else: only a running engine may hide it. */
 .driven .scorecard { opacity: var(--sc, 0); }
 
 .scorecard-head {
-  font-family: var(--f-util); font-size: 0.82rem; letter-spacing: 0.02em;
-  color: var(--dim); margin: 0 0 1rem; max-width: none;
+  font-family: var(--f-body); font-size: var(--t-lede); line-height: 1.6;
+  color: var(--dim); margin: 0; max-width: 46ch;
 }
-.scorecard-head .fixed-tally { color: var(--fg); font-weight: 500; }
 
-.ticks { display: flex; gap: 5px; height: 1.15rem; align-items: stretch; }
-.ticks i {
-  flex: 1; max-width: 1.5rem;
-  position: relative;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
-}
-/* Pseudo-element fill: column keeps full height, only the level moves. */
-.ticks i::after {
-  content: ""; position: absolute; inset: auto 0 0 0;
-  height: 100%; background: color-mix(in srgb, var(--fg) 50%, transparent);
-}
-.ticks i.open {
-  border-bottom: 1px dashed var(--warn);
-}
-.ticks i.open::after { content: none; }
-.driven .ticks i::after { height: calc(var(--t, 0) * 100%); }
-.driven .ticks i.open { opacity: calc(0.25 + var(--t, 0) * 0.75); }
-
-.scorecard-foot {
-  display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
-  margin: 1.1rem 0 0; max-width: none;
-  font-family: var(--f-util); font-size: 0.75rem; color: var(--dim);
-}
-.stat b { font-size: 1.05rem; font-weight: 500; font-variant-numeric: tabular-nums; }
-.stat.ok b { color: var(--fg); }
-.stat.no b { color: var(--warn); }
+.driven .driven 
 
 @media (max-width: 48rem) {
-  .scorecard { margin-top: 2.25rem; }
-  .ticks { height: 1rem; gap: 3px; }
-  .scorecard-foot { flex-direction: column; gap: 0.35rem; }
-}
+  .scorecard { margin-top: 2rem; }
+    }
 
 /* ---------- 7. Sections ------------------------------------------------ */
 .sec { padding-block: var(--step); scroll-margin-top: 4.5rem; }
@@ -350,7 +412,7 @@ em { font-style: normal; font-weight: 600; }
 
 .sec-head { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 3.5rem; }
 .sec-head h2 {
-  font-family: var(--f-util); font-size: 0.78rem; letter-spacing: 0.16em;
+  font-family: var(--f-util); font-size: var(--t-m); letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--dim); font-weight: 500;
 }
 
@@ -362,7 +424,7 @@ em { font-style: normal; font-weight: 600; }
 .record-grid {
   display: grid;
   grid-template-columns: 4.5rem minmax(0, 1fr) 15rem;
-  gap: 0 2.75rem;
+  gap: 0 2.5rem;
   align-items: start;
 }
 @media (max-width: 66rem) {
@@ -375,9 +437,9 @@ em { font-style: normal; font-weight: 600; }
 }
 
 .record-index {
-  font-family: var(--f-util); font-size: 0.7rem; font-weight: 600;
+  font-family: var(--f-util); font-size: var(--t-s); font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--dim); padding-top: 1.15rem; line-height: 1.5;
+  color: var(--dim); padding-top: 1rem; line-height: 1.5;
 }
 @media (max-width: 48rem) { .record-index { padding-top: 0; } }
 
@@ -389,28 +451,28 @@ em { font-style: normal; font-weight: 600; }
   line-height: 1.1; letter-spacing: -0.026em;
   margin-bottom: 0.5rem; text-wrap: balance;
 }
-.record .tagline { color: var(--dim); font-size: 1.0625rem; margin-bottom: 1.6rem; }
+.record .tagline { color: var(--dim); font-size: var(--t-body); margin-bottom: 1.5rem; }
 
 .decision {
-  margin: 1.9rem 0 0; padding: 0.25rem 0 0.25rem 1.35rem;
+  margin: 2rem 0 0; padding: 0.25rem 0 0.25rem 1.5rem;
   border-left: 1px solid var(--line);
   max-width: var(--measure);
 }
 .decision dt {
-  font-family: var(--f-util); font-size: 0.7rem; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem;
+  font-family: var(--f-util); font-size: var(--t-s); letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem;
   position: relative;
 }
 .decision dt::before {
   content: ""; position: absolute; left: -1.35rem; top: 0.5em;
   width: 0.7rem; height: 1px; background: var(--accent);
 }
-.decision dd { margin: 0 0 1.25rem; }
+.decision dd { margin: 0 0 1rem; }
 .decision dd:last-child { margin-bottom: 0; }
 
 .links { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; list-style: none; padding: 0; }
 .links a {
-  font-family: var(--f-util); font-size: 0.78rem; font-weight: 600; color: var(--fg);
+  font-family: var(--f-util); font-size: var(--t-m); font-weight: 600; color: var(--fg);
   text-decoration: none; position: relative;
   display: inline-flex; align-items: center; min-height: 44px;
 }
@@ -422,21 +484,26 @@ em { font-style: normal; font-weight: 600; }
 .links a:hover::after, .links a:focus-visible::after { transform: scaleX(1); }
 
 /* ---------- 9. THE SIGNATURE: the Confidence Meter -------------------- */
-.instrument { position: sticky; top: 5rem; }
+.instrument {
+  position: sticky; top: 5rem;
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  padding: 1rem 1rem 1rem;
+}
 @media (max-width: 66rem) { .instrument { position: static; } }
 
 .meter-head {
   display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
-  font-family: var(--f-util); font-size: 0.66rem; letter-spacing: 0.16em;
+  font-family: var(--f-util); font-size: var(--t-xs); letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--dim);
-  padding-bottom: 0.75rem; border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem; border-bottom: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
 }
 .meter-read { color: var(--dim); font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
 .meter-read.short { color: var(--warn); }
 
 /* One segment per claim, lighting in sequence as the record scrolls through, and the unverified one never lights — it stays an open
    dashed gap, which is the whole point of the page. */
-.meter { display: flex; gap: 4px; margin: 0.9rem 0 1.4rem; height: 0.9rem; }
+.meter { display: flex; gap: 4px; margin: 1rem 0 1.5rem; height: 0.9rem; }
 .meter i {
   flex: 1; position: relative;
   border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
@@ -450,11 +517,11 @@ em { font-style: normal; font-weight: 600; }
 .driven .meter i::after { height: calc(var(--t, 0) * 100%); }
 .driven .meter i.gap { opacity: calc(0.3 + var(--t, 0) * 0.7); }
 
-.claims { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
+.claims { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
 .claims li {
   padding-left: 0.75rem;
   border-left: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  font-family: var(--f-util); font-size: 0.7rem; line-height: 1.5;
+  font-family: var(--f-util); font-size: var(--t-s); line-height: 1.5;
   font-variant-numeric: tabular-nums;
   transition: opacity 500ms var(--ease-out), border-color 500ms var(--ease-out);
 }
@@ -470,15 +537,15 @@ em { font-style: normal; font-weight: 600; }
 .driven .claims li.unverified { opacity: 1; }
 .claims .k {
   display: block; color: var(--dim);
-  font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
-  margin-bottom: 0.15rem;
+  font-size: var(--t-xs); letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 0.25rem;
 }
 .claims li.unverified .k { color: var(--warn); }
-.claims .v { color: var(--fg); }
+.claims .v { color: var(--fg); font-size: var(--t-s); font-weight: 500; letter-spacing: -0.003em; }
 .claims li.unverified .v { color: var(--warn); }
 
 /* ---------- 10. About / stack ----------------------------------------- */
-.two { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0 2.75rem; }
+.two { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0 2.5rem; }
 @media (max-width: 48rem) { .two { grid-template-columns: 1fr; } }
 
 /* Portrait sits in the records' instrument column. Both children placed
@@ -498,7 +565,7 @@ em { font-style: normal; font-weight: 600; }
   .two.about > div:last-child { grid-column: 1; }
 }
 
-.portrait { margin: 0 0 2.25rem; max-width: 15rem; }
+.portrait { margin: 0 0 2rem; max-width: 15rem; }
 @media (min-width: 66.01rem) { .portrait { margin-bottom: 0; max-width: none; } }
 
 .portrait img {
@@ -514,10 +581,10 @@ em { font-style: normal; font-weight: 600; }
 
 .portrait figcaption {
   margin-top: 0.75rem;
-  padding-top: 0.7rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--line);
   font-family: var(--f-util);
-  font-size: 0.66rem;
+  font-size: var(--t-xs);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--dim);
@@ -535,21 +602,21 @@ em { font-style: normal; font-weight: 600; }
   filter: grayscale(1) contrast(1.02) brightness(0.86);
 }
 
-.stack { margin: 2.25rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.55rem; max-width: var(--measure); }
+.stack { margin: 2rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; max-width: var(--measure); }
 .stack li {
   display: grid; grid-template-columns: 7rem 1fr; gap: 1rem;
-  font-family: var(--f-util); font-size: 0.78rem;
-  padding-bottom: 0.55rem; border-bottom: 1px solid var(--line);
+  font-family: var(--f-util); font-size: var(--t-m);
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--line);
 }
 .stack li b {
   font-weight: 500; color: var(--dim);
-  letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.68rem;
+  letter-spacing: 0.08em; text-transform: uppercase; font-size: var(--t-xs);
 }
 
 /* ---------- 11. Footer ------------------------------------------------- */
 footer {
   border-top: 1px solid var(--line); padding: 2.5rem 0 3.5rem;
-  font-family: var(--f-util); font-size: 0.72rem; color: var(--dim);
+  font-family: var(--f-util); font-size: var(--t-s); color: var(--dim);
   display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;
 }
 footer a { color: var(--dim); text-decoration: none; }
@@ -602,8 +669,7 @@ footer a:hover { color: var(--accent); }
   .thesis-line .ln { clip-path: none; opacity: 1; }
   .thesis-legend { opacity: 1; transform: none; }
   .scorecard { opacity: 1; }
-  .ticks i { --t: 1; }
-  .js.observed .rise { opacity: 1; transform: none; }
+    .js.observed .rise { opacity: 1; transform: none; }
   .js.observed .rise.is-in { transition: none; }
   .progress { display: none; }
   body { transition: none; }
@@ -618,8 +684,7 @@ footer a:hover { color: var(--accent); }
   .thesis-stage { position: static; height: auto; }
   .thesis-line .ln { clip-path: none; opacity: 1; }
   .scorecard { opacity: 1; }
-  .ticks i { --t: 1; }
-  .record, .sec { break-inside: avoid; }
+    .record, .sec { break-inside: avoid; }
   .instrument { position: static; }
   .claims li { opacity: 1; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }

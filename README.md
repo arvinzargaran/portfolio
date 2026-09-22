@@ -50,6 +50,13 @@ with the thesis text clipped to nothing.
 `scrollHeight` reads live in `measure()`, called on load and resize only. Reading
 them per frame forces a synchronous reflow every frame and janks the page.
 
+**Scale.** Type is six steps on a ~1.125 ratio below body (`--t-xs` … `--t-body`)
+plus fluid display clamps above it; there were 21 ad-hoc sizes before, several
+within 3% of each other. Vertical spacing is a 0.25rem rhythm (`--sp-1` …
+`--sp-9`); there were 28 distinct values, now 11. The single exception is the
+0.1rem offset on the hero index, which is a measured optical correction to sit
+its heading on the eyebrow's baseline, not a spacing value.
+
 **Tokens**
 
 | | |
@@ -86,6 +93,29 @@ This is a GitHub Pages user site. Copy these three files to the root of
 `arvinzargaran/arvinzargaran.github.io`, replacing the old Bootstrap template,
 and push to `main`.
 
+## Copy review, v2 (applied 2026-09-18)
+
+An outside reviewer edited the full copy deck. Applied in full except where a
+claim would not have survived checking:
+
+- "co-op" is "internship" everywhere.
+- "I've shipped three systems" → "I've **built** three systems." The old verb
+  contradicted the page's own red markers.
+- The hero names the three systems and carries a stack line under the lede, so a
+  technical reader does not have to scroll to learn what you work in.
+- **The Acadvo line count is gone.** The site said ~37,700; the project's own
+  audit totals closer to 49,500. A receipt that contradicts your own
+  documentation is the most expensive kind of error on a page like this, and
+  line counts read as padding anyway. The 49 suites and router/model counts
+  carry the same signal without the risk.
+- **The page-level tally is gone**, replaced by a prose statement of the rule it
+  encoded. Hand-counted, stale the moment a sentence changes, and an invitation
+  for a sharp reader to count and find a different number. The per-project
+  ratios stay: local, small, verifiable.
+- Source receipts were written in as live for all three projects. Only
+  `ufc-predictor` resolves, so only that one is a receipt; the other two remain
+  open in red until the repos exist.
+
 ## Before it goes live
 
 Several receipts on the page are marked **unproven**, in red. They are visible
@@ -100,8 +130,10 @@ to anyone reading the site, which is the point. Fix them, don't hide them.
       to deploy to.
 - [ ] **`resume.pdf`.** The contact link was removed rather than left pointing at
       a missing file. Add the PDF and restore the link when it is current.
-- [ ] **UFC holdout accuracy.** Run `python3 -m src.evaluate`, then replace the
-      `holdout accuracy` receipt with the real number and the test window.
+- [x] ~~**UFC holdout accuracy.**~~ Done: 70.2% accuracy, 0.580 log-loss over a
+      leakage-free chronological backtest of ~1,300 bouts, against the market's
+      0.584 on the same fights. That record is now 7 / 7 with no open receipts —
+      the first one on the page to be fully sourced.
 - [ ] **Finance Tracker source.** Push `eclipse-workspace/PersonalFinanceTracker`
       to GitHub and link it.
 - [ ] **Acadvo live demo.** Deploy it, or leave the receipt honest.
@@ -130,7 +162,17 @@ control they surround is identified by a text label at 15:1, not by its border.
 375px.
 
 - Audited against the Vercel Web Interface Guidelines.
-- `prefers-reduced-motion` disables every animation.
+- `prefers-reduced-motion` disables every animation: verified with Chrome's
+  `--force-prefers-reduced-motion=reduce`, the root class stays `js` alone —
+  neither `observed` nor `driven` is added, so nothing is hidden, the thesis is
+  never clipped and the progress bar is `display: none`.
+- **Reveals do not depend on IntersectionObserver alone.** Measured with the 4s
+  safety net disabled, IO left the work heading and the third record at opacity
+  0 after a full continuous scroll, and left six of eight hidden after a jump to
+  `#work` — so anyone clicking the nav saw an empty section until the net fired.
+  The scroll pass now also reveals anything above `truth + viewport + 240`, from
+  positions cached in `measure()`, so no layout is read per frame and visibility
+  never depends on the damped value or on an observer firing.
 - The hero animation is pure CSS, so it still plays in a background tab where
   `requestAnimationFrame` is throttled; nothing on the page can be left
   invisible by a JavaScript failure.
