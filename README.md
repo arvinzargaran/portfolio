@@ -136,19 +136,75 @@ to anyone reading the site, which is the point. Fix them, don't hide them.
       0.5821. **The market is the stronger predictor** — the page now says so.
       The record is 8/8, fully sourced.
 - [x] ~~Confirm the LinkedIn URL slug is right.~~ Confirmed by Arvin, 2026-09-21.
-- [ ] **`resume.pdf`.** The only PDF on hand
-      (`~/Desktop/Arvin_Zargaran_Resume.pdf`) is a client-services/banking
-      résumé — no GPA, no Acadvo, no SWE experience — wrong for a page pitching
-      a software engineering internship. Needs an actual SWE-facing résumé
-      before this link goes back in.
-- [ ] **Acadvo live demo.** Deploy it, or leave the receipt honest. This is the
-      only remaining open (red) claim on the page.
+- [x] ~~`resume.pdf`.~~ Not linked from the site, by Arvin's choice
+      (2026-09-21) — stays a direct-send document, not a published page. The
+      SWE-facing résumé at `~/Downloads/Arvin_Zargaran_Resume.docx` had the
+      same wrong Acadvo/UFC numbers as the site did before the 2026-09-21
+      correction pass; those three bullets were fixed in the docx too, with
+      the pre-fix version kept alongside it as
+      `Arvin_Zargaran_Resume_before-fix-2026-09-21.docx`.
+- [x] ~~Graduation date and "seeking an internship" language.~~ Removed
+      site-wide 2026-09-21, per Arvin's request — hero eyebrow, lede, meta
+      description, `og:description`, the About paragraph's "(Honours BSc,
+      expected 2029)", and the Contact section's "Summer 2027... internship"
+      line, including its mailto subject. The page now reads as identity and
+      evidence, not a time-boxed pitch.
+- [x] ~~Security and web-interface-guidelines pass.~~ Done 2026-09-21 — see
+      "Security" below. CSP, security headers, non-breaking spaces on every
+      number+unit pair, the one `innerHTML` replaced with safe DOM
+      construction, focus order and hit-target sizes re-verified in a real
+      browser (not the sandboxed preview pane, which showed a false positive
+      on the skip link's size from a stale focus-state test artifact).
+- [ ] **Acadvo live demo.** Deploy it, or leave the receipt honest. This is
+      the only remaining open (red) claim on the page.
 - [ ] **Domain.** Arvin is buying a `.com` rather than using GitHub Pages
       (decided 2026-09-21). Until then: `<link rel="canonical">`, `og:url`,
       `og:image`, the JSON-LD `url`/`image`, `sitemap.xml` and `robots.txt`
       all still point at `arvinzargaran.github.io`, which is not live and
       won't be. Update all of these to the real domain once it's bought — a
-      grep for `arvinzargaran.github.io` finds every instance.
+      grep for `arvinzargaran.github.io` finds every instance. Once a host is
+      picked, also activate `_headers` (or port it to that host's format —
+      see "Security" below) and update the CSP's `style-src`/`font-src`/
+      `connect-src` only if new external resources are added.
+
+## Security, audited 2026-09-21
+
+Static site, zero attack surface by construction — no forms, no user input,
+no fetch/XHR, no third-party JS. What's in place anyway:
+
+- **Content-Security-Policy**, both as a `<meta>` tag in `index.html` (works
+  on any host) and duplicated with `frame-ancestors` added in `_headers`
+  (Netlify/Cloudflare Pages format; `frame-ancestors` is a header-only
+  directive browsers silently ignore in `<meta>`). `script-src` uses exact
+  SHA-256 hashes for the two inline `<script>` blocks — no `unsafe-inline`
+  for scripts. `style-src` needs `unsafe-inline` because the scroll engine
+  drives animation through `element.style.setProperty('--t', …)` per frame;
+  that's a deliberate, documented trade-off, not an oversight.
+  **If you edit either inline script, the browser will silently block it
+  until you recompute its hash** — the exact command is in `_headers`.
+  Verify in a real browser after any CSP-adjacent edit; a wrong hash fails
+  closed with no visible symptom beyond broken JSON-LD or a dead theme
+  toggle. (Caught exactly this once already: my first computed hash for the
+  theme script was wrong — Chrome's own console reported the correct one,
+  which is what's actually in the file now.)
+- `_headers` also sets `X-Frame-Options: DENY`, `X-Content-Type-Options:
+  nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+  `Permissions-Policy` (denies camera/mic/geolocation/payment/usb and opts
+  out of FLoC), `Strict-Transport-Security` (2-year max-age, preload-ready),
+  and `Cross-Origin-Opener-Policy` / `Cross-Origin-Resource-Policy: same-origin`.
+  **GitHub Pages cannot serve custom headers at all** — if that ends up the
+  host, only the `<meta>` CSP applies. Vercel needs these ported into
+  `vercel.json`. Netlify and Cloudflare Pages read `_headers` natively.
+- The one `innerHTML` write in `main.js` (rendering the hero's per-project
+  ratio) was replaced with plain DOM node construction — the values it wrote
+  were always trusted integers from the page's own DOM, never user input, so
+  there was no actual XSS path, but the pattern is gone so a strict CSP
+  `script-src` audit has nothing to flag.
+- No secrets, tokens, or credentials anywhere in the repo or its history —
+  scanned before every push in this project. No third-party trackers,
+  analytics, or cookies.
+- All outbound links are same-tab (no `target="_blank"`), so there's no
+  `rel="noopener"` gap to begin with.
 
 ## Accessibility & performance notes
 

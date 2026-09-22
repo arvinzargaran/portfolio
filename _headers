@@ -1,0 +1,33 @@
+# Security headers for static hosts that read this file (Netlify, Cloudflare
+# Pages, and compatible platforms use this exact "_headers" format natively).
+# GitHub Pages does NOT support custom HTTP headers at all — if the site
+# deploys there, only the <meta> CSP in index.html applies, and frame-ancestors
+# below is inert until the host changes. Vercel needs the same values ported
+# into vercel.json's "headers" array instead of this file.
+#
+# The CSP here matches the <meta> tag in index.html, plus frame-ancestors,
+# which browsers ignore when set via <meta> and only honour from a header.
+# If you edit the two inline <script> blocks in index.html (the theme-toggle
+# bootstrap or the JSON-LD block), recompute their hashes and update both
+# this file and the <meta> tag together, or the browser will silently block
+# whichever one no longer matches:
+#
+#   python3 -c "
+#   import re, hashlib, base64
+#   s = open('index.html', encoding='utf-8').read()
+#   for m in re.findall(r'<script(?: type=\"application/ld\+json\")?>\n(.*?)\n</script>', s, re.S):
+#       print('sha256-' + base64.b64encode(hashlib.sha256(m.encode()).digest()).decode())
+#   "
+#
+# Then verify in a real browser (not this repo's sandboxed preview pane) —
+# the DevTools console reports the *correct* hash directly if one is wrong.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-P9rp6Weg+owU8EI11eY1HfqLvnCCVybU0Fy8I0Aref4=' 'sha256-riRo+xAIa69YEk4DjXaRXdO0L2mv0vkSqppJ7DCa9Zo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin

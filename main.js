@@ -129,7 +129,11 @@
     document.querySelectorAll('[data-index-read]').forEach(function (el) {
       var m = meters[parseInt(el.getAttribute('data-index-read'), 10)];
       if (!m) return;
-      el.innerHTML = '<b>' + m.sourced.length + '</b> / ' + m.total;
+      el.textContent = '';
+      var b = document.createElement('b');
+      b.textContent = String(m.sourced.length);
+      el.appendChild(b);
+      el.appendChild(document.createTextNode(' / ' + m.total));
     });
   })();
 
