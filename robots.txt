@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://arvinzargaran.github.io/sitemap.xml
+Sitemap: https://arvinzargaran.com/sitemap.xml
