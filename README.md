@@ -89,9 +89,10 @@ python3 -m http.server 4321
 
 ## Deploy
 
-This is a GitHub Pages user site. Copy these three files to the root of
-`arvinzargaran/arvinzargaran.github.io`, replacing the old Bootstrap template,
-and push to `main`.
+Not decided yet. Was staged for GitHub Pages
+(`arvinzargaran/arvinzargaran.github.io`) but Arvin is buying a custom `.com`
+instead (2026-09-21) — see the domain item under "Before it goes live". Until
+a host is picked, `python3 -m http.server` is the only way to view it.
 
 ## Copy review, v2 (applied 2026-09-18)
 
@@ -121,24 +122,33 @@ claim would not have survived checking:
 Several receipts on the page are marked **unproven**, in red. They are visible
 to anyone reading the site, which is the point. Fix them, don't hide them.
 
-- [ ] **Publish `acadvo`.** It has no git remote at all — the repo was never
-      created on GitHub, which is why the old `Source →` link 404'd. Secret scan
-      is clean: `.env` and `backend/.env` are gitignored and appear nowhere in
-      history. Create the repo, push, then restore the link.
-- [ ] **Push `arvinzargaran.github.io` and enable Pages.** The repo is not public,
-      so the canonical URL in the `<head>` currently 404s and the site has nowhere
-      to deploy to.
-- [ ] **`resume.pdf`.** The contact link was removed rather than left pointing at
-      a missing file. Add the PDF and restore the link when it is current.
-- [x] ~~**UFC holdout accuracy.**~~ Done: 70.2% accuracy, 0.580 log-loss over a
-      leakage-free chronological backtest of ~1,300 bouts, against the market's
-      0.584 on the same fights. That record is now 7 / 7 with no open receipts —
-      the first one on the page to be fully sourced.
-- [ ] **Finance Tracker source.** Push `eclipse-workspace/PersonalFinanceTracker`
-      to GitHub and link it.
-- [ ] **Acadvo live demo.** Deploy it, or leave the receipt honest.
-- [ ] Confirm the LinkedIn URL slug is right.
-- [ ] Buy `arvinzargaran.com` and point it here with a `CNAME` file.
+- [x] ~~**Publish `acadvo`.**~~ Done 2026-09-21. Public, green CI, source link
+      restored, meter moved to 9/10 (the live-demo claim is the one remaining
+      open receipt).
+- [x] ~~**Finance Tracker source.**~~ Done 2026-09-21. Pushed
+      `eclipse-workspace/PersonalFinanceTracker` to
+      [`github.com/arvinzargaran/finance-tracker`](https://github.com/arvinzargaran/finance-tracker),
+      linked, meter now 6/6 — the first fully-sourced record on the page.
+- [x] ~~**UFC holdout accuracy.**~~ Re-measured 2026-09-21 — the earlier
+      "70.2% / 0.580 / beats the market" figures were wrong (they conflated the
+      model+market blend with the model alone). Actual: model stats-only 65.1%
+      accuracy / 0.6359 log-loss; market baseline 70.0% / 0.5846; blend 69.7% /
+      0.5821. **The market is the stronger predictor** — the page now says so.
+      The record is 8/8, fully sourced.
+- [x] ~~Confirm the LinkedIn URL slug is right.~~ Confirmed by Arvin, 2026-09-21.
+- [ ] **`resume.pdf`.** The only PDF on hand
+      (`~/Desktop/Arvin_Zargaran_Resume.pdf`) is a client-services/banking
+      résumé — no GPA, no Acadvo, no SWE experience — wrong for a page pitching
+      a software engineering internship. Needs an actual SWE-facing résumé
+      before this link goes back in.
+- [ ] **Acadvo live demo.** Deploy it, or leave the receipt honest. This is the
+      only remaining open (red) claim on the page.
+- [ ] **Domain.** Arvin is buying a `.com` rather than using GitHub Pages
+      (decided 2026-09-21). Until then: `<link rel="canonical">`, `og:url`,
+      `og:image`, the JSON-LD `url`/`image`, `sitemap.xml` and `robots.txt`
+      all still point at `arvinzargaran.github.io`, which is not live and
+      won't be. Update all of these to the real domain once it's bought — a
+      grep for `arvinzargaran.github.io` finds every instance.
 
 ## Accessibility & performance notes
 
